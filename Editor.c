@@ -1335,8 +1335,6 @@ void printLine(int ln) {
     }
 
     PrintString("\033[K");                                        // all done, clear to the end of the line on a vt100 emulator
-    //if(i>0)PrintString("\033[K");                      // all done, clear to the end of the line on a vt100 emulator
-                                                       // except if at last column on the Vt100 screen.   
     if(Option.ColourCode) SetColour(NULL, true);
     curx = VWidth - 1;
 }

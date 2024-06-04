@@ -692,12 +692,28 @@ void MIPS16 EditInputLine(void) {
  
                                 // Lets put the cursor at the beginning of where the command is displayed.
                                 // backspace to the beginning of line
+#define USEBACKSPACE
+#ifdef USEBACKSPACE                                
                                 while(j)  {
                                   if (j==l4 || j==l3 ||j==l2 ){DisplayPutC('\b');SSPrintString("\e[1A");SSPrintString(goend);}else{ MMputchar('\b',0);}
                                   j--;
                                 }
                                 fflush(stdout);                                
                                  MX470Display(CLEAR_TO_EOS);SSPrintString("\033[0J");        //Clear to End Of Screen
+#else
+                                 CurrentX=0;CurrentY=CurrentY-((CharIndex+1)/Option.Width * gui_font_height);
+                                 if (CharIndex>l4-1)SSPrintString("\e[3A");
+                                 else if (CharIndex>l3-1)SSPrintString("\e[2A");
+                                 else if(CharIndex>l2-1)SSPrintString("\e[1A");
+                                 SSPrintString("\r");
+                                 //CurrentX=0;SerUSBPutS("\r");
+                                 MX470Display(CLEAR_TO_EOS);SSPrintString("\033[0J");
+        				         MMPrintString("> ");
+        				         fflush(stdout);
+
+
+#endif
+
                                  j=0;
                                  while(j < strlen((const char *)inpbuf)) {
                                       MMputchar(inpbuf[j],0);
@@ -904,6 +920,19 @@ void MIPS16 EditInputLine(void) {
 
                 insert_lastcmd: 
 
+                            // If NoScroll and its near the bottom then clear screen and write command at top
+                            //if(Option.NoScroll && Option.DISPLAY_CONSOLE && (CurrentY + 2*gui_font_height >= VRes)){
+                            if(Option.NoScroll && Option.DISPLAY_CONSOLE && (CurrentY + (2 + strlen((const char *)inpbuf)/Option.Width)*gui_font_height >= VRes)){    
+                                      ClearScreen(gui_bcolour);CurrentX=0;CurrentY=0;
+                                      if(FindSubFun((unsigned char *)"MM.PROMPT", 0) >= 0) {
+                                         SSPrintString("\r");
+                                         ExecuteProgram((unsigned char *)"MM.PROMPT\0");
+                                      } else{
+                                         SSPrintString("\r");
+                                         MMPrintString("> ");                           // print the prompt
+                                      }    
+                          
+                            }else{
 			                   // Lets put the cursor at the beginning of where the command is displayed.
                                // backspace to the beginning of line
                                 j=CharIndex;  //????????????????????????????????
@@ -913,7 +942,7 @@ void MIPS16 EditInputLine(void) {
                                 }
                                 fflush(stdout);
                                 MX470Display(CLEAR_TO_EOS);SSPrintString("\033[0J");        //Clear to End Of Screen
-
+                            }
 
 				            CharIndex = strlen((const char *)inpbuf);
                             MMPrintString((char *)inpbuf);                                          // display the line
@@ -956,13 +985,17 @@ void MIPS16 EditInputLine(void) {
                                 // If its going to scroll then clear screen
                                 if(Option.NoScroll && Option.DISPLAY_CONSOLE){
                                    if(CurrentY + 2*gui_font_height >= VRes) {
-                                      ClearScreen(gui_bcolour);CurrentX=0;CurrentY=0;
-                                      if(FindSubFun((unsigned char *)"MM.PROMPT", 0) >= 0) {
-                                         ExecuteProgram((unsigned char *)"MM.PROMPT\0");
-                                      } else{
-                                         MMPrintString("> ");                                    // print the prompt
-                                      }    
-                                      DisplayPutS((char *)inpbuf);                                          // display the line
+                                      ClearScreen(gui_bcolour);/*CurrentX=0*/;CurrentY=0;
+                                      CurrentX = (MMPromptPos-2)*gui_font_width  ;          
+                                      //if(FindSubFun((unsigned char *)"MM.PROMPT", 0) >= 0) {
+                                      //   ExecuteProgram((unsigned char *)"MM.PROMPT\0");
+                                      //} else{
+                                         //SSPrintString("\r");
+                                         //MMPrintString("> ");                           // print the prompt
+                                         DisplayPutC('>');
+                                         DisplayPutC(' ');
+                                      //}    
+                                      DisplayPutS((char *)inpbuf);                      // display the line
                                       
                                     }
                                 }
