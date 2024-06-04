@@ -1,6 +1,6 @@
 # PicomiteConsoleWrapping
 
-These four files contain changes to 5.09.00RC3 source that implement commansline wrapping on the Picomites that allow commands to span serveral lines in order to allow the full 255 character command line to be realised.
+These four files contain changes to 5.09.00RC4 source that implement commansline wrapping on the Picomites that allow commands to span serveral lines in order to allow the full 255 character command line to be realised.
 The commands can be edited using the various edit keys (HOME,END Left/Right arrow, backspace, INS,DEL) and these are aware of the multiple lines.
 
 
